@@ -64,7 +64,10 @@ class Loader(object):
         return [method for name, method in self._methods_for(example_group) if self._is_example(method)]
 
     def _methods_for(self, klass):
-        return inspect.getmembers(klass, inspect.isfunction)
+        return inspect.getmembers(klass, self._is_helper_method)
+
+    def _is_helper_method(self, value):
+        return inspect.isfunction(value) or isinstance(value, property)
 
     def _is_example(self, method):
         return getattr(method, '_example', False)
@@ -90,7 +93,6 @@ class Loader(object):
             example_group.append(nested_example_group)
 
     def _load_helper_methods(self, klass, example_group):
-        helper_methods = [method for name, method in self._methods_for(klass) if not self._is_example(method)]
-
-        for method in helper_methods:
-            example_group.helpers[method.__name__] = method
+        for name, method in self._methods_for(klass):
+            if not self._is_example(method):
+                example_group.helpers[name] = method

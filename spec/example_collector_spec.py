@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from mamba import description, context, it
-from expects import expect, be_true, have_length, equal, be_a, have_property, be_none
+from expects import expect, be_true, have_length, equal, be_a, have_property, be_none, contain_exactly
 
 import os
 import inspect
@@ -29,6 +29,7 @@ WITH_TAGS_PATH = spec_abspath('with_tags.py')
 WITH_FOCUS_PATH = spec_abspath('with_focus.py')
 SHARED_CONTEXT_PATH = spec_abspath('with_shared_context.py')
 INCLUDED_CONTEXT_PATH = spec_abspath('with_included_context.py')
+HELPER_METHODS_PATH = spec_abspath('with_helper_methods.py')
 
 
 def _load_module(path):
@@ -167,3 +168,12 @@ with description(ExampleCollector):
             module = _load_module(WITH_RELATIVE_IMPORT_PATH)
 
             expect(module).to(have_property('HelperClass'))
+
+    with context('when loading helper methods'):
+        with it('loads all functions and properties'):
+            module = _load_module(HELPER_METHODS_PATH)
+
+            examples = loader.Loader().load_examples_from(module)
+            expect(examples[0].helpers.keys()).to(contain_exactly('helper_method',
+                                                                  'helper_property',
+                                                                  'wrapped_helper_method'))
